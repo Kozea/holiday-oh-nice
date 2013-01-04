@@ -10,8 +10,22 @@ app.secret_key = 'wonderful secret key'
 app.config['SQLALCHEMY_DATABASE_URI'] = \
     'postgresql+psycopg2://holiday:@localhost/holiday'
 db = SQLAlchemy(app)
+db.init_app(app)
+db.metadata.reflect(bind=db.get_engine(app))
 
 LDAP = ldap.open('ldap.keleos.fr')
+
+
+class Person(db.Model):
+    __tablename__ = 'person'
+
+
+class Slot(db.Model):
+    __tablename__ = 'slot'
+
+
+class Vacation(db.Model):
+    __tablename__ = 'vacation'
 
 
 def auth(function):
@@ -36,4 +50,4 @@ def connect():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True, host='0.0.0.0', port=8282)
