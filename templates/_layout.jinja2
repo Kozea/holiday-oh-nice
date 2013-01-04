@@ -31,7 +31,7 @@
         {% if session.person %}
           <li><a href="{{ url_for('disconnect') }}">Se déconnecter</a></li>
         {% else %}
-          <li><a href="{{ url_for('connect') }}">Se connecter</a></li>
+          <li><a href="{{ url_for('index') }}">Se connecter</a></li>
         {% endif %}
       </ul>
     </nav>

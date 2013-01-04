@@ -41,34 +41,28 @@ def auth(function):
     return wrapper
 
 
-@app.route('/')
+@app.route('/', methods=('GET', 'POST'))
 def index():
+    if request.method == 'POST':
+        username = request.form['username'].encode('utf-8')
+        password = request.form['password'].encode('utf-8')
+        user = LDAP.search_s(
+            'ou=People,dc=keleos,dc=fr',
+            ldap.SCOPE_ONELEVEL, 'uid=%s' % username)
+
+        try:
+            LDAP.simple_bind_s(user[0][0], password)
+        except (ldap.INVALID_CREDENTIALS, IndexError):
+            flash(u'L’identifiant ou le mot de passe est incorrect.', 'error')
+        else:
+            session['person'] = user[0][1]['cn'][0].decode('utf-8')
+
+        return redirect(url_for('index'))
+
     return render_template('index.html.jinja2')
 
 
-@app.route('/connect/', methods=('GET', 'POST'))
-def connect():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = LDAP.search_s(
-            'ou=People,dc=keleos,dc=fr',
-            ldap.SCOPE_ONELEVEL, "uid=%s" % username)
-
-        if not user or not password:
-            flash(u'L’identifiant ou le mot de passe est incorrect.', 'error')
-            return redirect(url_for('connect'))
-        try:
-            LDAP.simple_bind_s(user[0][0], password)
-        except ldap.INVALID_CREDENTIALS:
-            flash(u'L’identifiant ou le mot de passe est incorrect.', 'error')
-            return redirect(url_for('connect'))
-        session['person'] = user[0][1]['cn'][0].decode('utf-8')
-        return redirect(url_for('index'))
-
-    return render_template('connect.html.jinja2')
-
-
+@auth
 @app.route('/disconnect/')
 def disconnect():
     del session['person']
