@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Holiday Oh Nice!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css" media="screen" />
+  </head>
+
+  <body>
+    <header>
+      <h1>Holiday Oh Nice</h1>
+    </header>
+
+    <main>
+      {% block main %}{% endblock main %}
+    </main>
+
+    <footer>
+      <ul>
+        <li><a href="http://community.kozea.org/">A Kozea Project</a></li>
+        <li><a href="http://validator.w3.org/check?uri=referer">Optimized for Standards</a></li>
+      </ul>
+    </footer>
+  </body>
+</html>
