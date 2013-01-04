@@ -1,0 +1,18 @@
+{% extends '_layout.jinja2' %}
+
+{% block main %}
+  <article>
+    <h2>Connexion</h2>
+    <form method="post">
+      <label>
+        Identifiant
+        <input name="username" />
+      </label>
+      <label>
+        Mot de passe
+        <input name="password" type="password" />
+      </label>
+      <input type="submit" value="Se connecter" />
+    </form>
+  </article>
+{% endblock main %}

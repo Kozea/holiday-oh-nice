@@ -2,14 +2,9 @@ BEGIN;
 
 CREATE TYPE part_type AS ENUM ('am', 'pm');
 
-CREATE TABLE person (
-  login varchar PRIMARY KEY NOT NULL,
-  name varchar NOT NULL
-);
-
 CREATE TABLE slot (
   slot_id serial PRIMARY KEY NOT NULL,
-  person_login varchar NOT NULL REFERENCES person(login),
+  person varchar NOT NULL,
   name varchar NOT NULL,
   start date NOT NULL,
   parts int NOT NULL

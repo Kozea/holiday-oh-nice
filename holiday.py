@@ -1,8 +1,10 @@
 #!/usr/bin/env python
+# coding: utf-8
 
 import ldap
 from functools import wraps
-from flask import Flask, session, render_template, redirect, url_for
+from flask import (
+    Flask, request, session, render_template, redirect, url_for, flash)
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -46,8 +48,32 @@ def index():
 
 @app.route('/connect/', methods=('GET', 'POST'))
 def connect():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = LDAP.search_s(
+            'ou=People,dc=keleos,dc=fr',
+            ldap.SCOPE_ONELEVEL, "uid=%s" % username)
+
+        if not user or not password:
+            flash(u'L’identifiant ou le mot de passe est incorrect.', 'error')
+            return redirect(url_for('connect'))
+        try:
+            LDAP.simple_bind_s(user[0][0], password)
+        except ldap.INVALID_CREDENTIALS:
+            flash(u'L’identifiant ou le mot de passe est incorrect.', 'error')
+            return redirect(url_for('connect'))
+        session['person'] = user[0][1]['cn'][0].decode('utf-8')
+        return redirect(url_for('index'))
+
     return render_template('connect.html.jinja2')
 
+
+@app.route('/disconnect/')
+def disconnect():
+    del session['person']
+    flash(u'Vous êtes déconnecté(e)', 'info')
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8282)
