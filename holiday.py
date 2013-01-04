@@ -7,7 +7,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.secret_key = 'wonderful secret key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://rtt:@localhost/rtt'
+app.config['SQLALCHEMY_DATABASE_URI'] = \
+    'postgresql+psycopg2://holiday:@localhost/holiday'
 db = SQLAlchemy(app)
 
 LDAP = ldap.open('ldap.keleos.fr')
