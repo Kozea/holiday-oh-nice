@@ -2,11 +2,14 @@
 # coding: utf-8
 
 import ldap
+import locale
+from math import floor
 from datetime import date
 from functools import wraps
 from flask import (
     Flask, request, session, render_template, redirect, url_for, flash)
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func, extract
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -20,21 +23,18 @@ db.metadata.reflect(bind=db.get_engine(app))
 
 LDAP = ldap.open('ldap.keleos.fr')
 
+locale.setlocale(locale.LC_ALL, 'fr_FR')
+
 
 class Slot(db.Model):
     __tablename__ = 'slot'
 
     @hybrid_property
-    def days(self):
-        return self.parts / 2.
-
-    @hybrid_property
-    def remaining_days(self):
-        return (
-            self.parts -
+    def remaining(self):
+        return self.parts - (
             db.session.query(Vacation.part)
             .filter(Vacation.slot_id == self.slot_id)
-            .count()) / 2.
+            .count())
 
 
 class Vacation(db.Model):
@@ -58,6 +58,13 @@ def auth(function):
         else:
             return redirect(url_for('index'))
     return wrapper
+
+
+@app.template_filter()
+def days(half_days):
+    return u'%s%s jour%s' % (
+        int(half_days / 2.), u' ½' if half_days % 2 else u'',
+        u's' if half_days > 2 else u'')
 
 
 @app.route('/', methods=('GET', 'POST'))
@@ -95,7 +102,7 @@ def add():
     slots = (
         Slot.query
         .filter(Slot.person == session.get('person'))
-        .filter(Slot.remaining_days > 0)
+        .filter(Slot.remaining > 0)
         .filter(Slot.start <= today)
         .filter((Slot.stop >= today) | (Slot.stop == None))
         .order_by(Slot.name)
@@ -128,6 +135,29 @@ def days():
         .order_by(Slot.start.desc())
         .all())
     return render_template('days.html.jinja2', slots=slots, today=today)
+
+
+@app.route('/month')
+@app.route('/month-<int:month>-<int:year>')
+@auth
+def month(month=None, year=None):
+    today = date.today()
+    if month is None:
+        month = today.month
+    if year is None:
+        year = today.year
+    month, year = ((month - 1) % 12 + 1), year + int(floor((month - 1) / 12.))
+    title = date(year, month, 1).strftime('%B %Y').decode('utf-8')
+    slots = (
+        db.session
+        .query(func.count(Vacation.day).label('half_days'),
+               Slot.name, Slot.person)
+        .filter(extract('month', Vacation.day) == month)
+        .filter(extract('year', Vacation.day) == year)
+        .group_by(Slot.slot_id)
+        .all())
+    return render_template(
+        'month.html.jinja2', title=title, month=month, year=year, slots=slots)
 
 
 @app.route('/disconnect')

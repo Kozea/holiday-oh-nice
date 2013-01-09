@@ -29,7 +29,8 @@
       <ul>
         {% if session.person %}
           <li><a href="{{ url_for('add') }}">Ajouter un jour</a></li>
-          <li><a href="{{ url_for('days') }}">Liste des congés</a></li>
+          <li><a href="{{ url_for('days') }}">Liste personnelle</a></li>
+          <li><a href="{{ url_for('month') }}">Récapitulatif mensuel</a></li>
           <li><a href="{{ url_for('disconnect') }}">Se déconnecter</a></li>
         {% else %}
           <li><a href="{{ url_for('index') }}">Se connecter</a></li>

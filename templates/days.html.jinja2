@@ -9,7 +9,14 @@
       {% else %}
         <p>À partir du {{ slot.start }}</p>
       {% endif %}
-      <p>{{ slot.remaining_days }}/{{ slot.days }} jours disponibles</p>
+
+      <dl>
+        <dt>Disponible</dt><dd>{{ slot.remaining | days }}</dd>
+        <dt>Total</dt><dd>{{ slot.parts | days }}</dd>
+      </dl>
+
+      <p>Jours pris :</p>
+
       {% for vacation in slot.vacations %}
         {% if loop.first %}<ul>{% endif %}
         <li>

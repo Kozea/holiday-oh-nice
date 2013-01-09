@@ -1,0 +1,22 @@
+{% extends '_layout.jinja2' %}
+
+{% block main %}
+  <article>
+    <h2>{{ title | capitalize }}</h2>
+    <ul>
+      <li><a href="{{ url_for('month', month=month-1, year=year) }}">Mois précédent</a></li>
+      <li><a href="{{ url_for('month', month=month+1, year=year) }}">Mois suivant</a></li>
+    </ul>
+    {% for person, person_slots in slots | groupby('person') %}
+      <section>
+        <h3>{{ person }}</h3>
+        <dl>
+        {% for slot in person_slots %}
+          <dt>{{ slot.name }}</dt>
+          <dd>{{ slot.half_days | days }}</dd>
+        {% endfor %}
+        </dl>
+      </section>
+    {% endfor %}
+  </article>
+{% endblock main %}
