@@ -1,0 +1,15 @@
+{% extends '_layout.jinja2' %}
+
+{% block main %}
+  {% for slot in slots %} 
+    <article>
+      <h2>{{ slot.name }}</h2>
+      {% if slot.stop %}
+        <p>Du {{ slot.start }} au {{ slot.stop }}</p>
+      {% else %}
+        <p>À partir du {{ slot.start }}</p>
+      {% endif %}
+      <p>{{ slot.remaining_days }}/{{ slot.days }} jours disponibles</p>
+    </article>
+  {% endfor %}
+{% endblock main %}

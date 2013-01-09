@@ -1,0 +1,30 @@
+{% extends '_layout.jinja2' %}
+
+{% block main %}
+  <article>
+    <h2>Ajouter un congé</h2>
+    <form method="post">
+      <label>
+        Type
+        <select name="slot">
+          {% for slot in slots %}
+            <option value="{{ slot.slot_id }}">{{ slot.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Jour
+        <input name="day" type="date" />
+      </label>
+      <label>
+        <input name="parts" value="am" type="checkbox" />
+        Matin
+      </label>
+      <label>
+        <input name="parts" value="pm" type="checkbox" />
+        Après-midi
+      </label>
+      <input type="submit" value="Ajouter" />
+    </form>
+  </article>
+{% endblock main %}

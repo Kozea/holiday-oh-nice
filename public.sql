@@ -6,8 +6,9 @@ CREATE TABLE slot (
   slot_id serial PRIMARY KEY NOT NULL,
   person varchar NOT NULL,
   name varchar NOT NULL,
+  parts int NOT NULL,
   start date NOT NULL,
-  parts int NOT NULL
+  stop date
 );
 
 CREATE TABLE vacation (
