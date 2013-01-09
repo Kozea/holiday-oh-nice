@@ -12,7 +12,14 @@
       <p>{{ slot.remaining_days }}/{{ slot.days }} jours disponibles</p>
       {% for vacation in slot.vacations %}
         {% if loop.first %}<ul>{% endif %}
-        <li>{{ vacation.day }} - {{ vacation.part_name }}</li>
+        <li>
+          {{ vacation.day }} - {{ vacation.part_name }}
+          {% if vacation.day > today %}
+            <form method="POST" action="{{ url_for('delete', vacation_id=vacation.vacation_id) }}">
+              <input type="submit" value="Supprimer" />
+            </form>
+          {% endif %}
+        </li>
         {% if loop.last %}</ul>{% endif %}
       {% endfor %}
     </article>

@@ -103,6 +103,20 @@ def add():
     return render_template('add.html.jinja2', slots=slots)
 
 
+@app.route('/delete/<vacation_id>', methods=('POST',))
+@auth
+def delete(vacation_id):
+    vacation = (
+        Vacation.query
+        .join(Slot)
+        .filter(Slot.person == session['person'])
+        .filter(Vacation.vacation_id == vacation_id)
+        .first())
+    db.session.delete(vacation)
+    db.session.commit()
+    return redirect(url_for('days'))
+
+
 @app.route('/days')
 @auth
 def days():
@@ -113,7 +127,7 @@ def days():
         .filter(Slot.start <= today)
         .order_by(Slot.start.desc())
         .all())
-    return render_template('days.html.jinja2', slots=slots)
+    return render_template('days.html.jinja2', slots=slots, today=today)
 
 
 @app.route('/disconnect')
