@@ -7,6 +7,7 @@ from functools import wraps
 from flask import (
     Flask, request, session, render_template, redirect, url_for, flash)
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 
 app = Flask(__name__)
@@ -29,14 +30,23 @@ class Slot(db.Model):
 
     @hybrid_property
     def remaining_days(self):
-        return self.days - sum(
+        return (
+            self.parts -
             db.session.query(Vacation.part)
             .filter(Vacation.slot_id == self.slot_id)
-            .all())
+            .count()) / 2.
 
 
 class Vacation(db.Model):
     __tablename__ = 'vacation'
+
+    @hybrid_property
+    def part_name(self):
+        return u'Après-midi' if self.part == 'pm' else u'Matin'
+
+
+Vacation.slot = relationship('Slot', backref=backref(
+    'vacations', order_by=(Vacation.day.desc(), Vacation.part)))
 
 
 def auth(function):
@@ -64,12 +74,12 @@ def index():
             flash(u'L’identifiant ou le mot de passe est incorrect.', 'error')
         else:
             session['person'] = user[0][1]['cn'][0].decode('utf-8')
+            return redirect(url_for('days'))
         return redirect(url_for('index'))
-
     return render_template('index.html.jinja2')
 
 
-@app.route('/add/', methods=('GET', 'POST'))
+@app.route('/add', methods=('GET', 'POST'))
 @auth
 def add():
     if request.method == 'POST':
@@ -79,7 +89,7 @@ def add():
         for part in parts:
             db.session.add(Vacation(day=day, part=part, slot_id=slot_id))
         db.session.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('days'))
 
     today = date.today()
     slots = (
@@ -93,7 +103,7 @@ def add():
     return render_template('add.html.jinja2', slots=slots)
 
 
-@app.route('/days/')
+@app.route('/days')
 @auth
 def days():
     today = date.today()
@@ -106,12 +116,13 @@ def days():
     return render_template('days.html.jinja2', slots=slots)
 
 
-@app.route('/disconnect/')
+@app.route('/disconnect')
 @auth
 def disconnect():
     del session['person']
     flash(u'Vous êtes déconnecté(e)', 'info')
-    return redirect(url_for('index'))
+    return redirect(url_for('days'))
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8282)

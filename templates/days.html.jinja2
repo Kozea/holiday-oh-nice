@@ -10,6 +10,11 @@
         <p>À partir du {{ slot.start }}</p>
       {% endif %}
       <p>{{ slot.remaining_days }}/{{ slot.days }} jours disponibles</p>
+      {% for vacation in slot.vacations %}
+        {% if loop.first %}<ul>{% endif %}
+        <li>{{ vacation.day }} - {{ vacation.part_name }}</li>
+        {% if loop.last %}</ul>{% endif %}
+      {% endfor %}
     </article>
   {% endfor %}
 {% endblock main %}
