@@ -3,8 +3,8 @@
 
 import ldap
 import locale
+import datetime
 from math import floor
-from datetime import date
 from functools import wraps
 from flask import (
     Flask, request, session, render_template, redirect, url_for, flash)
@@ -63,8 +63,13 @@ def auth(function):
 @app.template_filter()
 def days(half_days):
     return u'%s%s jour%s' % (
-        int(half_days / 2.), u' ½' if half_days % 2 else u'',
+        int(half_days / 2.), u',5' if half_days % 2 else u'',
         u's' if half_days > 2 else u'')
+
+
+@app.template_filter()
+def date(date):
+    return date.strftime('%-d %B %Y').decode('utf-8')
 
 
 @app.route('/', methods=('GET', 'POST'))
@@ -98,7 +103,7 @@ def add():
         db.session.commit()
         return redirect(url_for('days'))
 
-    today = date.today()
+    today = datetime.date.today()
     slots = (
         Slot.query
         .filter(Slot.person == session.get('person'))
@@ -127,7 +132,7 @@ def delete(vacation_id):
 @app.route('/days')
 @auth
 def days():
-    today = date.today()
+    today = datetime.date.today()
     slots = (
         Slot.query
         .filter(Slot.person == session.get('person'))
@@ -141,13 +146,13 @@ def days():
 @app.route('/month-<int:month>-<int:year>')
 @auth
 def month(month=None, year=None):
-    today = date.today()
+    today = datetime.date.today()
     if month is None:
         month = today.month
     if year is None:
         year = today.year
     month, year = ((month - 1) % 12 + 1), year + int(floor((month - 1) / 12.))
-    title = date(year, month, 1).strftime('%B %Y').decode('utf-8')
+    title = datetime.date(year, month, 1).strftime('%B %Y').decode('utf-8')
     slots = (
         db.session
         .query(func.count(Vacation.day).label('half_days'),

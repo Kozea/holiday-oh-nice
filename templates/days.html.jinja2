@@ -5,7 +5,7 @@
     <article>
       <h2>{{ slot.name }}</h2>
       {% if slot.stop %}
-        <p>Du {{ slot.start }} au {{ slot.stop }}</p>
+        <p>Du {{ slot.start | date }} au {{ slot.stop | date }}</p>
       {% else %}
         <p>À partir du {{ slot.start }}</p>
       {% endif %}
@@ -20,7 +20,7 @@
       {% for vacation in slot.vacations %}
         {% if loop.first %}<ul>{% endif %}
         <li>
-          {{ vacation.day }} - {{ vacation.part_name }}
+          {{ vacation.day | date }} - {{ vacation.part_name }}
           {% if vacation.day > today %}
             <form method="POST" action="{{ url_for('delete', vacation_id=vacation.vacation_id) }}">
               <input type="submit" value="Supprimer" />
