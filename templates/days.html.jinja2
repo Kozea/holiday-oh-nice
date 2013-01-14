@@ -15,10 +15,8 @@
         <dt>Total</dt><dd>{{ slot.parts | days }}</dd>
       </dl>
 
-      <p>Jours pris :</p>
-
       {% for vacation in slot.vacations %}
-        {% if loop.first %}<ul>{% endif %}
+        {% if loop.first %}<p>Jours pris :</p><ul>{% endif %}
         <li>
           {{ vacation.day | date }} - {{ vacation.part_name }}
           {% if vacation.day > today %}

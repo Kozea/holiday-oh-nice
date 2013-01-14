@@ -7,13 +7,20 @@
       <li><a href="{{ url_for('month', month=month-1, year=year) }}">Mois précédent</a></li>
       <li><a href="{{ url_for('month', month=month+1, year=year) }}">Mois suivant</a></li>
     </ul>
-    {% for person, person_slots in slots | groupby('person') %}
+    {% for person, person_vacations in vacations | groupby('slot.person') %}
       <section>
         <h3>{{ person }}</h3>
         <dl>
-        {% for slot in person_slots %}
+        {% for slot, vacations in person_vacations | groupby('slot') %}
           <dt>{{ slot.name }}</dt>
-          <dd>{{ slot.half_days | days }}</dd>
+          <dd>
+            {{ person_vacations | length | days }}
+            <ul>
+              {% for vacation in vacations %}
+                <li>{{ vacation.day.strftime('%d %b').decode('utf-8') }} ({{ vacation.part_name }})</li>
+              {% endfor %}
+            </ul>
+          </dd>
         {% endfor %}
         </dl>
       </section>

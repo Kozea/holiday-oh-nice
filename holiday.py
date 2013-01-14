@@ -30,11 +30,19 @@ class Slot(db.Model):
     __tablename__ = 'slot'
 
     @hybrid_property
+    def short_name(self):
+        return self.name.split()[0]
+
+    @hybrid_property
+    def remaining(self):
+        return self.parts - len(self.vacations)
+
+    @remaining.expression
     def remaining(self):
         return self.parts - (
-            db.session.query(Vacation.part)
-            .filter(Vacation.slot_id == self.slot_id)
-            .count())
+            db.session.query(func.count(1))
+            .filter(Vacation.slot_id == Slot.slot_id)
+            .correlate(Slot))
 
 
 class Vacation(db.Model):
@@ -42,7 +50,7 @@ class Vacation(db.Model):
 
     @hybrid_property
     def part_name(self):
-        return u'Après-midi' if self.part == 'pm' else u'Matin'
+        return u'après-midi' if self.part == 'pm' else u'matin'
 
 
 Vacation.slot = relationship('Slot', backref=backref(
@@ -75,8 +83,13 @@ def date(date):
 @app.route('/', methods=('GET', 'POST'))
 def index():
     if request.method == 'POST':
+        if app.debug:
+            session['person'] = request.form['username']
+            return redirect(url_for('days'))
+
         username = request.form['username'].encode('utf-8')
         password = request.form['password'].encode('utf-8')
+
         user = LDAP.search_s(
             'ou=People,dc=keleos,dc=fr',
             ldap.SCOPE_ONELEVEL, 'uid=%s' % username)
@@ -106,7 +119,7 @@ def add():
     today = datetime.date.today()
     slots = (
         Slot.query
-        .filter(Slot.person == session.get('person'))
+        .filter(Slot.person == session['person'])
         .filter(Slot.remaining > 0)
         .filter(Slot.start <= today)
         .filter((Slot.stop >= today) | (Slot.stop == None))
@@ -135,6 +148,7 @@ def days():
     today = datetime.date.today()
     slots = (
         Slot.query
+        .filter(Slot.remaining > 0)
         .filter(Slot.person == session.get('person'))
         .filter(Slot.start <= today)
         .order_by(Slot.start.desc())
@@ -153,16 +167,15 @@ def month(month=None, year=None):
         year = today.year
     month, year = ((month - 1) % 12 + 1), year + int(floor((month - 1) / 12.))
     title = datetime.date(year, month, 1).strftime('%B %Y').decode('utf-8')
-    slots = (
-        db.session
-        .query(func.count(Vacation.day).label('half_days'),
-               Slot.name, Slot.person)
+    vacations = (
+        Vacation.query
         .filter(extract('month', Vacation.day) == month)
         .filter(extract('year', Vacation.day) == year)
-        .group_by(Slot.slot_id)
+        .order_by(Vacation.slot_id, Vacation.day, Vacation.part)
         .all())
     return render_template(
-        'month.html.jinja2', title=title, month=month, year=year, slots=slots)
+        'month.html.jinja2', title=title, month=month, year=year,
+        vacations=vacations)
 
 
 @app.route('/disconnect')

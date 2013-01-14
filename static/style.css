@@ -6,6 +6,10 @@ h1 {
   font-variant: small-caps;
 }
 
+ul {
+  margin: 0.25em 0;
+}
+
 nav {
   background: black;
   display: block;
@@ -44,4 +48,9 @@ footer {
 
 dt:after {
   content: ' : ';
+}
+
+label {
+  display: block;
+  padding: 0.3em 1em;
 }
