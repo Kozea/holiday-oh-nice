@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Kozea//NONSGML Holiday//EN
+{%- for vacation in vacations %}
+{%- set day = '%i%i%i' % (vacation.day.year, vacation.day.month, vacation.day.day) %}
+{%- set start = '070000' if vacation.part == 'am' else '130000' %}
+{%- set end = '130000' if vacation.part == 'am' else '190000' %}
+BEGIN:VEVENT
+UID:{{ vacation.vacation_id }}@holiday.kozea.fr
+DTSTART:{{ day }}T{{ start }}Z
+DTEND:{{ day }}T{{ end }}Z
+SUMMARY:{{ vacation.slot.person }} absent(e) {{ 'matin' if vacation.part == 'am' else 'après-midi' }}
+DESCRIPTION:{{ vacation.slot.name }}
+END:VEVENT
+{%- endfor %}
+END:VCALENDAR

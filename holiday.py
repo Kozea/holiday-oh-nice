@@ -178,6 +178,12 @@ def month(month=None, year=None):
         vacations=vacations)
 
 
+@app.route('/calendar.ics')
+def calendar():
+    vacations = Vacation.query.all()
+    return render_template('calendar.ics.jinja2', vacations=vacations)
+
+
 @app.route('/disconnect')
 @auth
 def disconnect():
