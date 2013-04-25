@@ -21,9 +21,20 @@ db = SQLAlchemy(app)
 db.init_app(app)
 db.metadata.reflect(bind=db.get_engine(app))
 
-LDAP = ldap.open('ldap.keleos.fr')
+_LDAP = ldap.open('ldap.keleos.fr')
 
 locale.setlocale(locale.LC_ALL, 'fr_FR')
+
+
+def get_ldap():
+    global _LDAP
+    try:
+        _LDAP.search_s(
+            'ou=People,dc=keleos,dc=fr',
+            ldap.SCOPE_ONELEVEL, 'uid=Anna Boten')
+    except:
+        _LDAP = ldap.open('ldap.keleos.fr')
+    return _LDAP
 
 
 class Slot(db.Model):
@@ -90,11 +101,11 @@ def index():
         username = request.form['username'].encode('utf-8')
         password = request.form['password'].encode('utf-8')
 
-        user = LDAP.search_s(
+        user = get_ldap().search_s(
             'ou=People,dc=keleos,dc=fr',
             ldap.SCOPE_ONELEVEL, 'uid=%s' % username)
         try:
-            LDAP.simple_bind_s(user[0][0], password)
+            get_ldap().simple_bind_s(user[0][0], password)
         except (ldap.INVALID_CREDENTIALS, IndexError):
             flash(u'L’identifiant ou le mot de passe est incorrect.', 'error')
         else:
