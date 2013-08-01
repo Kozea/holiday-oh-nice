@@ -203,5 +203,10 @@ def disconnect():
     return redirect(url_for('days'))
 
 
+@app.route('/range')
+@auth
+def range():
+    return render_template('range.html.jinja2')
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8282)

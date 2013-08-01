@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <title>Holiday Oh Nice!</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css" media="screen" />
+    {% block head %}{% endblock head %}
   </head>
 
   <body>
@@ -23,6 +24,7 @@
       <ul>
         {% if session.person %}
           <li><a href="{{ url_for('add') }}">Ajouter un jour</a></li>
+          <li><a href="{{ url_for('range') }}">Sélectionner vos congés</a></li>
           <li><a href="{{ url_for('days') }}">Liste personnelle</a></li>
           <li><a href="{{ url_for('month') }}">Récapitulatif mensuel</a></li>
           <li><a href="{{ url_for('disconnect') }}">Se déconnecter ({{ session.person }})</a></li>
@@ -31,7 +33,7 @@
         {% endif %}
       </ul>
     </nav>
-    
+
     <main>
       {% block main %}{% endblock main %}
     </main>
