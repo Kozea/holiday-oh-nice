@@ -1,7 +1,7 @@
 {% extends '_layout.jinja2' %}
 
 {% block main %}
-  {% for slot in slots %} 
+  {% for slot in slots %}
     <article>
       <h2>{{ slot.name }}</h2>
       {% if slot.stop %}

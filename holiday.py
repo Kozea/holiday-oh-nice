@@ -4,10 +4,12 @@
 import ldap
 import locale
 import datetime
+import json
 from math import floor
 from functools import wraps
 from flask import (
-    Flask, request, session, render_template, redirect, url_for, flash)
+    Flask, request, session, render_template, redirect, url_for, flash,
+    jsonify)
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func, extract
 from sqlalchemy.orm import relationship, backref
@@ -115,6 +117,19 @@ def index():
     return render_template('index.html.jinja2')
 
 
+def get_slots():
+    today = datetime.date.today()
+    slots = (
+        Slot.query
+        .filter(Slot.person == session['person'])
+        .filter(Slot.remaining > 0)
+        .filter(Slot.start <= today)
+        .filter((Slot.stop >= today) | (Slot.stop == None))
+        .order_by(Slot.name)
+        .all())
+    return slots
+
+
 @app.route('/add', methods=('GET', 'POST'))
 @auth
 def add():
@@ -127,16 +142,64 @@ def add():
         db.session.commit()
         return redirect(url_for('days'))
 
-    today = datetime.date.today()
-    slots = (
-        Slot.query
-        .filter(Slot.person == session['person'])
-        .filter(Slot.remaining > 0)
-        .filter(Slot.start <= today)
-        .filter((Slot.stop >= today) | (Slot.stop == None))
-        .order_by(Slot.name)
-        .all())
-    return render_template('add.html.jinja2', slots=slots)
+    return render_template('add.html.jinja2', slots=get_slots())
+
+
+@app.route('/range')
+@auth
+def range():
+    return render_template('range.html.jinja2', slots=get_slots())
+
+
+@app.route('/events/save', methods=('POST', ))
+@auth
+def event_save():
+    events = json.loads(request.values.get('events'))
+
+    for event in events:
+        db.session.add(Vacation(
+            day=datetime.datetime.strptime(event['day'], "%Y-%m-%dT%H:%M:%SZ"),
+            part=event['type'],
+            slot_id=int(event['slot'])))
+    db.session.commit()
+
+    return 'OK'
+
+
+@app.route('/events/from/<start>/to/<end>')
+@auth
+def events(start, end):
+    start = datetime.datetime.strptime(start, "%Y-%m-%dT%H:%M:%SZ")
+    end = datetime.datetime.strptime(end, "%Y-%m-%dT%H:%M:%SZ")
+    vacations = (Vacation.query
+                 .join(Slot)
+                 .filter(Slot.person == session['person'])
+                 .filter(Vacation.day >= start)
+                 .filter(Vacation.day < end)
+                 .all())
+    vac_by_day = {}
+    for vacation in vacations:
+        vac_by_day.setdefault(vacation.day, [])
+        vac_by_day[vacation.day].append(vacation)
+
+    events = []
+    for day, vacations in vac_by_day.items():
+        vacation = vacations[0]
+        label = ''
+
+        if len(vacations) < 2:
+            if vacation.part == "am":
+                label = u' (Matin)'
+            else:
+                label = u' (Après-midi)'
+
+        events.append({
+            'start': str(day),
+            'title': vacation.slot.name + label,
+            'className': ['already_taken'],
+            'allDay': True,
+        })
+    return jsonify({'events': events})
 
 
 @app.route('/delete/<vacation_id>', methods=('POST',))
@@ -202,11 +265,6 @@ def disconnect():
     flash(u'Vous êtes déconnecté(e)', 'info')
     return redirect(url_for('days'))
 
-
-@app.route('/range')
-@auth
-def range():
-    return render_template('range.html.jinja2')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8282)
