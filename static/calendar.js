@@ -31,6 +31,10 @@
       selectHelper: true,
       select: function(start, end, allDay) {
         var day, _results;
+        if ($('.delete-btn').hasClass('fc-state-down')) {
+          calendar.fullCalendar("unselect");
+          return;
+        }
         start = moment(start);
         end = moment(end);
         day = moment(start);
@@ -42,9 +46,22 @@
         return _results;
       },
       eventClick: function(event, jsEvent, view) {
-        var remaining;
+        var remaining, _ref;
         window.e = event;
         remaining = get_remaining();
+        if ($('.delete-btn').hasClass('fc-state-down')) {
+          if (event.className.length && ((_ref = event.className[0]) === 'full' || _ref === 'am' || _ref === 'pm')) {
+            calendar.fullCalendar('removeEvents', function(e) {
+              return e === event;
+            });
+            if (event.className[0] === 'full') {
+              set_remaining(remaining + 1);
+            } else {
+              set_remaining(remaining + .5);
+            }
+          }
+          return;
+        }
         if (event.className.indexOf('full') > -1) {
           event.className = ['am'];
           event.color = '#88bcd6';
@@ -64,7 +81,7 @@
           event.color = '#88bcd6';
           event.title = event.title.replace('Après-midi', 'Matin');
         }
-        return calendar.fullCalendar('renderEvent', event);
+        return calendar.fullCalendar('updateEvent', event);
       },
       editable: true,
       eventSources: [
@@ -122,7 +139,7 @@
       return calendar.fullCalendar("unselect");
     };
     $('.calendar .fc-header-left').append($('<span>', {
-      "class": 'fc-button fc-state-default fc-corner-left fc-corner-right'
+      "class": 'save-btn fc-button fc-state-default fc-corner-left fc-corner-right'
     }).text('Save').hover((function() {
       return $(this).addClass('fc-state-hover');
     }), (function() {
@@ -131,7 +148,7 @@
       return $(this).addClass('fc-state-down');
     })).mouseup((function() {
       return $(this).removeClass('fc-state-down');
-    }))).click(function() {
+    })).click(function() {
       var data, event, events, type, types, _i, _j, _len, _len1;
       events = calendar.fullCalendar('clientEvents', (function(e) {
         var _ref;
@@ -167,7 +184,15 @@
         });
       }
       return false;
-    });
+    }), $('<span>', {
+      "class": 'delete-btn fc-button fc-state-default fc-corner-left fc-corner-right'
+    }).text('Delete').hover((function() {
+      return $(this).addClass('fc-state-hover');
+    }), (function() {
+      return $(this).removeClass('fc-state-hover');
+    })).mousedown((function() {
+      return $(this).toggleClass('fc-state-down');
+    })));
     get_remaining = function() {
       return parseFloat($current_opt.attr('data-remaining'));
     };

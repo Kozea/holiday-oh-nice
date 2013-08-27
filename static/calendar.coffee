@@ -20,6 +20,9 @@ $(document).ready ->
         selectable: true
         selectHelper: true
         select: (start, end, allDay) ->
+            if $('.delete-btn').hasClass('fc-state-down')
+                calendar.fullCalendar "unselect"
+                return
             start = moment(start)
             end = moment(end)
             day = moment(start)
@@ -30,6 +33,16 @@ $(document).ready ->
         eventClick: (event, jsEvent, view) ->
             window.e = event
             remaining = get_remaining()
+
+            if $('.delete-btn').hasClass('fc-state-down')
+                if event.className.length and event.className[0] in ['full', 'am', 'pm']
+                    calendar.fullCalendar('removeEvents', (e) -> e == event)
+                    if event.className[0] == 'full'
+                        set_remaining(remaining + 1)
+                    else
+                        set_remaining(remaining + .5)
+                return
+
             if event.className.indexOf('full') > -1
                 event.className = ['am']
                 event.color = '#88bcd6'
@@ -48,7 +61,7 @@ $(document).ready ->
                 event.className = ['am']
                 event.color = '#88bcd6'
                 event.title = event.title.replace('Après-midi', 'Matin')
-            calendar.fullCalendar('renderEvent', event)
+            calendar.fullCalendar('updateEvent', event)
 
         editable: true
         eventSources: [
@@ -100,30 +113,44 @@ $(document).ready ->
         calendar.fullCalendar "unselect"
 
     $('.calendar .fc-header-left').append(
-        $('<span>', class: 'fc-button fc-state-default fc-corner-left fc-corner-right').text('Save').hover((-> $(@).addClass('fc-state-hover')), (-> $(@).removeClass('fc-state-hover fc-state-down'))).mousedown((-> $(@).addClass('fc-state-down'))).mouseup((-> $(@).removeClass('fc-state-down')))).click(->
-        events = calendar.fullCalendar('clientEvents', ((e) -> e.className[0] in ['full', 'am', 'pm']))
-        data = []
-        for event in events
-            if event.className[0] == 'full'
-                types = ['am', 'pm']
-            else
-                types = [event.className[0]]
-            for type in types
-                data.push(
-                    day: $.fullCalendar.formatDate(event.start, 'u')
-                    type: type
-                    slot: get_slot(event.title.split('(')[0].trim())
-                )
+        $('<span>', class: 'save-btn fc-button fc-state-default fc-corner-left fc-corner-right')
+            .text('Save')
+            .hover(
+                (-> $(@).addClass('fc-state-hover')),
+                (-> $(@).removeClass('fc-state-hover fc-state-down')))
+            .mousedown((-> $(@).addClass('fc-state-down')))
+            .mouseup((-> $(@).removeClass('fc-state-down')))
+            .click(->
+                events = calendar.fullCalendar('clientEvents', ((e) -> e.className[0] in ['full', 'am', 'pm']))
+                data = []
+                for event in events
+                    if event.className[0] == 'full'
+                        types = ['am', 'pm']
+                    else
+                        types = [event.className[0]]
+                    for type in types
+                        data.push(
+                            day: $.fullCalendar.formatDate(event.start, 'u')
+                            type: type
+                            slot: get_slot(event.title.split('(')[0].trim())
+                        )
 
-        if data.length
-            $.ajax(
-                url: '/events/save'
-                data: events: JSON.stringify(data)
-                type: 'POST'
-                success: ->
-                    location.reload()
-            )
-        false
+                if data.length
+                    $.ajax(
+                        url: '/events/save'
+                        data: events: JSON.stringify(data)
+                        type: 'POST'
+                        success: ->
+                            location.reload())
+
+                false
+            ),
+        $('<span>', class: 'delete-btn fc-button fc-state-default fc-corner-left fc-corner-right')
+            .text('Delete')
+            .hover(
+                (-> $(@).addClass('fc-state-hover')),
+                (-> $(@).removeClass('fc-state-hover')))
+            .mousedown((-> $(@).toggleClass('fc-state-down')))
     )
 
     get_remaining = -> parseFloat($current_opt.attr('data-remaining'))
