@@ -27,7 +27,6 @@
           <li><a href="{{ url_for('range') }}">Sélectionner vos congés</a></li>
           <li><a href="{{ url_for('days') }}">Liste personnelle</a></li>
           <li><a href="{{ url_for('month') }}">Récapitulatif mensuel</a></li>
-          <li><a href="{{ url_for('disconnect') }}">Se déconnecter ({{ session.person }})</a></li>
         {% else %}
           <li><a href="{{ url_for('index') }}">Se connecter</a></li>
         {% endif %}
@@ -41,7 +40,6 @@
     <footer>
       <ul>
         <li><a href="http://community.kozea.org/">A Kozea Project</a></li>
-        <li><a href="http://validator.w3.org/check?uri=referer">Optimized for Standards</a></li>
       </ul>
     </footer>
   </body>

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import ldap
-import locale
 import datetime
+import locale
+import httplib2
 import json
 from math import floor
 from functools import wraps
@@ -11,32 +11,25 @@ from flask import (
     Flask, request, session, render_template, redirect, url_for, flash,
     jsonify)
 from flask_sqlalchemy import SQLAlchemy
+from oauth2client.client import OAuth2WebServerFlow
 from sqlalchemy import func, extract
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.hybrid import hybrid_property
 
 app = Flask(__name__)
-app.secret_key = 'wonderful secret key'
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    'postgresql+psycopg2://holiday:@localhost/holiday'
+app.config.from_envvar('HOLIDAY_SETTINGS')
 db = SQLAlchemy(app)
 db.init_app(app)
 db.metadata.reflect(bind=db.get_engine(app))
 
-_LDAP = ldap.open('ldap.keleos.fr')
-
 locale.setlocale(locale.LC_ALL, 'fr_FR')
 
 
-def get_ldap():
-    global _LDAP
-    try:
-        _LDAP.search_s(
-            'ou=People,dc=keleos,dc=fr',
-            ldap.SCOPE_ONELEVEL, 'uid=Anna Boten')
-    except:
-        _LDAP = ldap.open('ldap.keleos.fr')
-    return _LDAP
+FLOW = OAuth2WebServerFlow(
+    client_id=app.config['OAUTH_CLIENT_ID'],
+    client_secret=app.config['OAUTH_CLIENT_SECRET'],
+    redirect_uri=app.config['OAUTH_REDIRECT'],
+    scope='profile', user_agent='holiday/1.0')
 
 
 class Slot(db.Model):
@@ -77,8 +70,27 @@ def auth(function):
         if session.get('person'):
             return function(*args, **kwargs)
         else:
-            return redirect(url_for('index'))
+            authorize_url = FLOW.step1_get_authorize_url()
+            return redirect(authorize_url)
     return wrapper
+
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    code = request.args.get('code')
+    if code:
+        credentials = FLOW.step2_exchange(code)
+        http = credentials.authorize(httplib2.Http())
+        _, content = http.request(
+            'https://www.googleapis.com/plus/v1/people/me')
+        data = json.loads(content.decode('utf-8'))
+        if 'name' in data:
+            session['person'] = '%s %s' % (
+                data['name']['givenName'], data['name']['familyName'])
+        return redirect(url_for('days'))
+    else:
+        print(request.form.get('error'))
+        return redirect(url_for('index'))
 
 
 @app.template_filter()
@@ -95,26 +107,7 @@ def date(date):
 
 @app.route('/', methods=('GET', 'POST'))
 def index():
-    if request.method == 'POST':
-        if app.debug:
-            session['person'] = request.form['username']
-            return redirect(url_for('days'))
-
-        username = request.form['username'].encode('utf-8')
-        password = request.form['password'].encode('utf-8')
-
-        user = get_ldap().search_s(
-            'ou=People,dc=keleos,dc=fr',
-            ldap.SCOPE_ONELEVEL, 'uid=%s' % username)
-        try:
-            get_ldap().simple_bind_s(user[0][0], password)
-        except (ldap.INVALID_CREDENTIALS, IndexError):
-            flash(u'L’identifiant ou le mot de passe est incorrect.', 'error')
-        else:
-            session['person'] = user[0][1]['cn'][0].decode('utf-8')
-            return redirect(url_for('days'))
-        return redirect(url_for('index'))
-    return render_template('index.html.jinja2')
+    return redirect(url_for('days'))
 
 
 def get_slots():
@@ -256,14 +249,6 @@ def month(month=None, year=None):
 def calendar():
     vacations = Vacation.query.all()
     return render_template('calendar.ics.jinja2', vacations=vacations)
-
-
-@app.route('/disconnect')
-@auth
-def disconnect():
-    del session['person']
-    flash(u'Vous êtes déconnecté(e)', 'info')
-    return redirect(url_for('days'))
 
 
 if __name__ == '__main__':
