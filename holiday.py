@@ -8,8 +8,7 @@ import json
 from math import floor
 from functools import wraps
 from flask import (
-    Flask, request, session, render_template, redirect, url_for, flash,
-    jsonify)
+    Flask, request, session, render_template, redirect, url_for, jsonify)
 from flask_sqlalchemy import SQLAlchemy
 from oauth2client.client import OAuth2WebServerFlow
 from sqlalchemy import func, extract
