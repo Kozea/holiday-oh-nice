@@ -224,7 +224,6 @@ def days():
 
 @app.route('/month')
 @app.route('/month-<int:month>-<int:year>')
-@auth
 def month(month=None, year=None):
     today = datetime.date.today()
     if month is None:
