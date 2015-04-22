@@ -214,7 +214,6 @@ def days():
     today = datetime.date.today()
     slots = (
         Slot.query
-        .filter(Slot.remaining > 0)
         .filter(Slot.person == session.get('person'))
         .filter(Slot.start <= today)
         .order_by(Slot.start.desc())
