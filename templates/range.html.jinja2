@@ -1,16 +1,5 @@
 {% extends '_layout.jinja2' %}
 
-{% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='fullcalendar-1.6.2/fullcalendar/fullcalendar.css') }}" type="text/css" />
-  <script src="{{ url_for('static', filename='fullcalendar-1.6.2/jquery/jquery-1.9.1.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='fullcalendar-1.6.2/jquery/jquery-ui-1.10.2.custom.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='fullcalendar-1.6.2/fullcalendar/fullcalendar.min.js') }}"></script>
-  <script src="{{ url_for('static', filename='fullcalendar-1.6.2/fullcalendar/gcal.js') }}"></script>
-  <script src="{{ url_for('static', filename='moment.min.js') }}"></script>
-  {# <script src="{{ url_for('static', filename='coffee-script.js') }}"></script> #}
-  {# <script type="text/coffeescript" src="{{ url_for('static', filename='calendar.coffee') }}"></script> #}
-  <script src="{{ url_for('static', filename='calendar.js') }}"></script>
-{% endblock head %}
 
 {% block main %}
   <label>

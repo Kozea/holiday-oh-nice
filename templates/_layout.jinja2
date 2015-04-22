@@ -3,7 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <title>Holiday Oh Nice!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='deps.min.css') }}" type="text/css" media="screen" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css" media="screen" />
+    <script src="{{ url_for('static', filename='deps.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
     {% block head %}{% endblock head %}
   </head>
 

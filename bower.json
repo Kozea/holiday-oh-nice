@@ -1,0 +1,14 @@
+{
+  "name": "holiday-oh-nice",
+  "version": "1.0.0",
+  "authors": [
+    "Florian Mounier"
+  ],
+  "description": "Your holidays",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {},
+  "devDependencies": {
+    "fullcalendar": "~2.3.1"
+  }
+}

@@ -1,14 +1,12 @@
+@charset "UTF-8";
 body {
-  margin: 3em 2em 2em 2em;
-}
+  margin: 3em 2em 2em 2em; }
 
 h1 {
-  font-variant: small-caps;
-}
+  font-variant: small-caps; }
 
 ul {
-  margin: 0.25em 0;
-}
+  margin: 0.25em 0; }
 
 nav {
   background: black;
@@ -17,40 +15,28 @@ nav {
   left: 0;
   position: absolute;
   top: 0;
-  width: 100%;
-}
-
-nav ul {
-  line-height: 2em;
-  margin: 0;
-  padding: 0;
-}
-
-nav li {
-  display: inline-block;
-}
-
-nav a {
-  color: white;
-  display: inline-block;
-  outline: none;
-  padding: 0 1em;
-  text-decoration: none;
-}
-
-nav a:hover, nav a:focus {
-  background: #444;
-}
+  width: 100%; }
+  nav ul {
+    line-height: 2em;
+    margin: 0;
+    padding: 0; }
+  nav li {
+    display: inline-block; }
+  nav a {
+    color: white;
+    display: inline-block;
+    outline: none;
+    padding: 0 1em;
+    text-decoration: none; }
+    nav a:hover, nav a:focus {
+      background: #444; }
 
 footer {
-  display: none;
-}
+  display: none; }
 
 dt:after {
-  content: ' : ';
-}
+  content: ' : '; }
 
 label {
   display: block;
-  padding: 0.3em 1em;
-}
+  padding: 0.3em 1em; }
