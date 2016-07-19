@@ -127,7 +127,7 @@ def get_slots():
 def add():
     if request.method == 'POST':
         slot_id = request.form['slot']
-        day = request.form['day']
+        day = datetime.datetime.strptime(request.form['day'], "%Y-%m-%d")
         parts = request.form.getlist('parts')
         for part in parts:
             db.session.add(Vacation(day=day, part=part, slot_id=slot_id))
