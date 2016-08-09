@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 
 import datetime
@@ -101,7 +101,7 @@ def days(half_days):
 
 @app.template_filter()
 def date(date):
-    return date.strftime('%-d %B %Y').decode('utf-8')
+    return date.strftime('%-d %B %Y')
 
 
 @app.route('/', methods=('GET', 'POST'))
@@ -230,7 +230,7 @@ def month(month=None, year=None):
     if year is None:
         year = today.year
     month, year = ((month - 1) % 12 + 1), year + int(floor((month - 1) / 12.))
-    title = datetime.date(year, month, 1).strftime('%B %Y').decode('utf-8')
+    title = datetime.date(year, month, 1).strftime('%B %Y')
     vacations = (
         Vacation.query
         .filter(extract('month', Vacation.day) == month)

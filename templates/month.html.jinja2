@@ -11,13 +11,13 @@
       <section>
         <h3>{{ person }}</h3>
         <dl>
-        {% for slot, vacations in person_vacations | groupby('slot') %}
-          <dt>{{ slot.name }}</dt>
+        {% for slot, vacations in person_vacations | groupby('slot.name') %}
+          <dt>{{ slot }}</dt>
           <dd>
             {{ person_vacations | length | days }}
             <ul>
               {% for vacation in vacations %}
-                <li>{{ vacation.day.strftime('%d %b').decode('utf-8') }} ({{ vacation.part_name }})</li>
+                <li>{{ vacation.day.strftime('%d %b') }} ({{ vacation.part_name }})</li>
               {% endfor %}
             </ul>
           </dd>
