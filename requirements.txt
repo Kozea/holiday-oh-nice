@@ -6,4 +6,3 @@ SQLAlchemy
 Werkzeug
 itsdangerous
 psycopg2
-python-ldap
