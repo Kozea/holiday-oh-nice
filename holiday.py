@@ -66,7 +66,7 @@ def auth(function):
     """Wrapper checking whether the user is logged in."""
     @wraps(function)
     def wrapper(*args, **kwargs):
-        if session.get('person'):
+        if session.get('person') or app.config['TESTING']:
             return function(*args, **kwargs)
         else:
             authorize_url = FLOW.step1_get_authorize_url()
