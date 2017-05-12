@@ -1,8 +1,0 @@
-Flask
-Flask-SQLAlchemy
-Jinja2
-MarkupSafe
-SQLAlchemy
-Werkzeug
-itsdangerous
-psycopg2

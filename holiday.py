@@ -2,18 +2,19 @@
 # coding: utf-8
 
 import datetime
-import locale
-import httplib2
 import json
-from math import floor
+import locale
 from functools import wraps
+from math import floor
+
+import httplib2
 from flask import (
-    Flask, request, session, render_template, redirect, url_for, jsonify)
+    Flask, jsonify, redirect, render_template, request, session, url_for)
 from flask_sqlalchemy import SQLAlchemy
 from oauth2client.client import OAuth2WebServerFlow
-from sqlalchemy import func, extract
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import extract, func
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import backref, relationship
 
 app = Flask(__name__)
 app.config.from_envvar('HOLIDAY_SETTINGS')
@@ -92,8 +93,8 @@ def oauth2callback():
         return redirect(url_for('index'))
 
 
-@app.template_filter()
-def days(half_days):
+@app.template_filter('days')
+def days_filter(half_days):
     return u'%s%s jour%s' % (
         int(half_days / 2.), u',5' if half_days % 2 else u'',
         u's' if half_days > 2 else u'')
@@ -116,7 +117,7 @@ def get_slots():
         .filter(Slot.person == session['person'])
         .filter(Slot.remaining > 0)
         .filter(Slot.start <= today)
-        .filter((Slot.stop >= today) | (Slot.stop == None))
+        .filter((Slot.stop >= today) | (Slot.stop.isnot(None)))
         .order_by(Slot.name)
         .all())
     return slots
