@@ -22,6 +22,6 @@ setup(
         'httplib2',
         'oauth2client',
     ],
-    tests_requires=tests_requirements,
+    tests_require=tests_requirements,
     extras_require={'test': tests_requirements}
 )
