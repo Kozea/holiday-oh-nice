@@ -8,8 +8,8 @@ from functools import wraps
 from math import floor
 
 import httplib2
-from flask import (
-    Flask, jsonify, redirect, render_template, request, session, url_for)
+from flask import (Flask, jsonify, redirect, render_template, request, session,
+                   url_for)
 from flask_sqlalchemy import SQLAlchemy
 from oauth2client.client import OAuth2WebServerFlow
 from sqlalchemy import extract, func
