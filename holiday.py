@@ -8,8 +8,8 @@ from functools import wraps
 from math import floor
 
 import httplib2
-from flask import (Flask, jsonify, redirect, render_template, request, session,
-                   url_for)
+from flask import (Flask, Response, jsonify, redirect, render_template,
+                   request, session, url_for)
 from flask_sqlalchemy import SQLAlchemy
 from oauth2client.client import OAuth2WebServerFlow
 from sqlalchemy import extract, func
@@ -246,7 +246,9 @@ def month(month=None, year=None):
 @app.route('/calendar.ics')
 def calendar():
     vacations = Vacation.query.all()
-    return render_template('calendar.ics.jinja2', vacations=vacations)
+    return Response(
+        render_template('calendar.ics.jinja2', vacations=vacations),
+        mimetype='text/calendar')
 
 
 if __name__ == '__main__':
