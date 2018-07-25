@@ -8,8 +8,8 @@ from functools import wraps
 from math import floor
 
 import httplib2
-from flask import (Flask, jsonify, redirect, render_template, request, session,
-                   url_for)
+from flask import (Flask, Response, jsonify, redirect, render_template,
+                   request, session, url_for)
 from flask_sqlalchemy import SQLAlchemy
 from oauth2client.client import OAuth2WebServerFlow
 from sqlalchemy import extract, func
@@ -56,7 +56,7 @@ class Vacation(db.Model):
 
     @hybrid_property
     def part_name(self):
-        return u'après-midi' if self.part == 'pm' else u'matin'
+        return 'après-midi' if self.part == 'pm' else 'matin'
 
 
 Vacation.slot = relationship('Slot', backref=backref(
@@ -89,15 +89,14 @@ def oauth2callback():
                 data['name']['givenName'], data['name']['familyName'])
         return redirect(url_for('days'))
     else:
-        print(request.form.get('error'))
         return redirect(url_for('index'))
 
 
 @app.template_filter('days')
 def days_filter(half_days):
-    return u'%s%s jour%s' % (
-        int(half_days / 2.), u',5' if half_days % 2 else u'',
-        u's' if half_days > 2 else u'')
+    return '%s%s jour%s' % (
+        int(half_days / 2.), ',5' if half_days % 2 else '',
+        's' if half_days > 2 else '')
 
 
 @app.template_filter()
@@ -182,9 +181,9 @@ def events(start, end):
 
         if len(vacations) < 2:
             if vacation.part == "am":
-                label = u' (Matin)'
+                label = ' (Matin)'
             else:
-                label = u' (Après-midi)'
+                label = ' (Après-midi)'
 
         events.append({
             'start': str(day),
@@ -246,7 +245,9 @@ def month(month=None, year=None):
 @app.route('/calendar.ics')
 def calendar():
     vacations = Vacation.query.all()
-    return render_template('calendar.ics.jinja2', vacations=vacations)
+    return Response(
+        render_template('calendar.ics.jinja2', vacations=vacations),
+        mimetype='text/calendar')
 
 
 if __name__ == '__main__':
