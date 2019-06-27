@@ -14,7 +14,7 @@
         {% for slot, vacations in person_vacations | groupby('slot.name') %}
           <dt>{{ slot }}</dt>
           <dd>
-            {{ person_vacations | length | days }}
+            {{ vacations | length | days }}
             <ul>
               {% for vacation in vacations %}
                 <li>{{ vacation.day.strftime('%d %b') }} ({{ vacation.part_name }})</li>
